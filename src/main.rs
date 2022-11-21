@@ -87,20 +87,20 @@ impl Sandbox for Calculator {
             },
             Message::Op(op) => {
                 self.op = Some(op);
-                self.result = self.num.trim().parse().unwrap();
+                self.result = self.num.trim().parse().unwrap_or(0.0);
                 self.num.clear();
             }
             Message::Negative => {
                 self.num.insert_str(0, "-");
             },
             Message::Result => {
-                let num = self.num.trim().parse::<f32>().unwrap();
+                let num = self.num.trim().parse::<f32>().unwrap_or(0.0);
                 match self.op {
                     Some(Operation::Sum) => self.result += num,
                     Some(Operation::Sub) => self.result -= num,
                     Some(Operation::Mul) => self.result *= num,
                     Some(Operation::Div) => self.result /= num,
-                    None => (),
+                    None => return,
                 }
 
                 self.num.clear();
@@ -109,30 +109,6 @@ impl Sandbox for Calculator {
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
-        let num_btn = |num| {
-            widget::button(
-                widget::text(num)
-                    .size(64)
-                    .vertical_alignment(alignment::Vertical::Center)
-                    .horizontal_alignment(alignment::Horizontal::Center)
-            )
-            .height(Length::Units(100))
-            .width(Length::Units(100))
-            .on_press(Message::Add(num))
-        };
-
-        let op_btn = |op: Operation| {
-            widget::button(
-                widget::text(op)
-                    .size(64)
-                    .vertical_alignment(alignment::Vertical::Center)
-                    .horizontal_alignment(alignment::Horizontal::Center)
-            )
-            .height(Length::Units(100))
-            .width(Length::Units(100))
-            .on_press(Message::Op(op))
-        };
-
         let btn = |sym, msg| {
             widget::button(
                 widget::text(sym)
@@ -144,7 +120,15 @@ impl Sandbox for Calculator {
             .width(Length::Units(100))
             .on_press(msg)
         };
-        
+
+        let num_btn = |num: &'static str| {
+            btn(num.to_string(), Message::Add(num))
+        };
+
+        let op_btn = |op: Operation| {
+            btn(op.to_string(), Message::Op(op))
+        };
+
         let input = widget::text_input(
             &self.result.to_string(), 
             &self.num, 
@@ -154,9 +138,9 @@ impl Sandbox for Calculator {
         widget::column![
             input,
             widget::row![
-                btn("C", Message::C),
-                btn("CE", Message::Ce),
-                btn("DEL", Message::Del),
+                btn("C".to_string(), Message::C),
+                btn("CE".to_string(), Message::Ce),
+                btn("DEL".to_string(), Message::Del),
                 op_btn(Operation::Div)
             ],
             widget::row![
@@ -178,10 +162,10 @@ impl Sandbox for Calculator {
                 op_btn(Operation::Sum)
             ],
             widget::row![
-                btn("±", Message::Negative),
+                btn("±".to_string(), Message::Negative),
                 num_btn("0"),
                 num_btn("."),
-                btn("=", Message::Result)
+                btn("=".to_string(), Message::Result)
             ],
         ].into()
     }
