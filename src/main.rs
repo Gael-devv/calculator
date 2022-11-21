@@ -1,6 +1,6 @@
 use iced::{
-    Sandbox, Settings, Element, Length, Theme, 
-    widget, alignment, window::Settings as WindowSettings
+    alignment, widget, window::Settings as WindowSettings, Element, Length, Sandbox, Settings,
+    Theme,
 };
 use std::fmt::{self, Display};
 
@@ -18,7 +18,7 @@ fn main() -> iced::Result {
 struct Calculator {
     num: String,
     result: f32,
-    op: Option<Operation>
+    op: Option<Operation>,
 }
 
 #[derive(Debug, Clone)]
@@ -30,7 +30,7 @@ enum Message {
     Del,
     Op(Operation),
     Negative,
-    Result
+    Result,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -58,7 +58,11 @@ impl Sandbox for Calculator {
     type Message = Message;
 
     fn new() -> Self {
-        Calculator { num: String::new(), result: 0.0, op: None }
+        Calculator {
+            num: String::new(),
+            result: 0.0,
+            op: None,
+        }
     }
 
     fn title(&self) -> String {
@@ -78,13 +82,13 @@ impl Sandbox for Calculator {
                 if n.trim().parse::<f32>().is_ok() | n.is_empty() {
                     self.num = n
                 }
-            },
+            }
             Message::Add(n) => {
                 self.num.push_str(n);
             }
             Message::Del => {
                 self.num.pop();
-            },
+            }
             Message::Op(op) => {
                 self.op = Some(op);
                 self.result = self.num.trim().parse().unwrap_or(0.0);
@@ -92,7 +96,7 @@ impl Sandbox for Calculator {
             }
             Message::Negative => {
                 self.num.insert_str(0, "-");
-            },
+            }
             Message::Result => {
                 let num = self.num.trim().parse::<f32>().unwrap_or(0.0);
                 match self.op {
@@ -114,26 +118,18 @@ impl Sandbox for Calculator {
                 widget::text(sym)
                     .size(64)
                     .vertical_alignment(alignment::Vertical::Center)
-                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .horizontal_alignment(alignment::Horizontal::Center),
             )
             .height(Length::Units(100))
             .width(Length::Units(100))
             .on_press(msg)
         };
 
-        let num_btn = |num: &'static str| {
-            btn(num.to_string(), Message::Add(num))
-        };
+        let num_btn = |num: &'static str| btn(num.to_string(), Message::Add(num));
+        
+        let op_btn = |op: Operation| btn(op.to_string(), Message::Op(op));
 
-        let op_btn = |op: Operation| {
-            btn(op.to_string(), Message::Op(op))
-        };
-
-        let input = widget::text_input(
-            &self.result.to_string(), 
-            &self.num, 
-            Message::Num
-        ).size(100);
+        let input = widget::text_input(&self.result.to_string(), &self.num, Message::Num).size(100);
 
         widget::column![
             input,
@@ -167,7 +163,8 @@ impl Sandbox for Calculator {
                 num_btn("."),
                 btn("=".to_string(), Message::Result)
             ],
-        ].into()
+        ]
+        .into()
     }
 
     fn theme(&self) -> Theme {
